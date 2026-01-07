@@ -4,11 +4,13 @@
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "hono": "^4.11.3"
   },
   "devDependencies": {
     "@hono/eslint-config": "^2.0.4",
     "@types/bun": "latest",
+    "dotenv-cli": "^11.0.0",
     "eslint-config-prettier": "^10.1.8"
   }
 }

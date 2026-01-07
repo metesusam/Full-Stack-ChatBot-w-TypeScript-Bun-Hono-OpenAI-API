@@ -15,6 +15,7 @@ export class SimpleInMemoryResource<T extends S & DBEntity, S>
     this.data.push(fullData);
     return fullData;
   }
+
   async delete(id: string): Promise<T | null> {
     const entity = this.data.find((x) => x.id === id);
     if (entity) {

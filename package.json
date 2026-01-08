@@ -9,8 +9,10 @@
   },
   "devDependencies": {
     "@hono/eslint-config": "^2.0.4",
+    "@hono/zod-validator": "^0.7.6",
     "@types/bun": "latest",
     "dotenv-cli": "^11.0.0",
-    "eslint-config-prettier": "^10.1.8"
+    "eslint-config-prettier": "^10.1.8",
+    "zod": "^4.3.5"
   }
 }

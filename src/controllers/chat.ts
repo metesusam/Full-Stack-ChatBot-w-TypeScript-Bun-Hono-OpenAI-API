@@ -7,6 +7,18 @@ import type {
   DBMessage,
 } from "../models/db";
 import type { IDatabaseResource } from "../storage/types";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
+
+const idSchema = z.object({
+  id: z.string().min(1),
+});
+const chatSchema = z.object({
+  name: z.string().min(1),
+});
+const messageSchema = z.object({
+  message: z.string().min(1),
+});
 
 export const CHAT_PREFIX = "/chat/";
 const CHAT_ROUTE = "";
@@ -18,9 +30,9 @@ export function createChatApp(
 ) {
   const chatApp = new Hono<ContextVariables>();
 
-  chatApp.post(CHAT_ROUTE, async (c) => {
+  chatApp.post(CHAT_ROUTE, zValidator("json", chatSchema), async (c) => {
     const userId = c.get("userId");
-    const { name } = await c.req.json();
+    const { name } = c.req.valid("json");
     const data = await chatResource.create({ name, ownerId: userId });
     return c.json({ data });
   });
@@ -37,23 +49,28 @@ export function createChatApp(
     return c.json({ data });
   });
 
-  chatApp.post(CHAT_MESSAGE_ROUTE, async (c) => {
-    const { id: chatId } = c.req.param();
-    const { message } = await c.req.json();
-    const userMessage: DBCreateMessage = {
-      message,
-      chatId,
-      type: "user",
-    };
+  chatApp.post(
+    CHAT_MESSAGE_ROUTE,
+    zValidator("param", idSchema),
+    zValidator("json", messageSchema),
+    async (c) => {
+      const { id: chatId } = c.req.valid("param");
+      const { message } = c.req.valid("json");
+      const userMessage: DBCreateMessage = {
+        message,
+        chatId,
+        type: "user",
+      };
 
-    await messageResource.create(userMessage);
-    const responseMessage: DBCreateMessage = {
-      message: "dummy response",
-      chatId,
-      type: "system",
-    };
-    const data = await messageResource.create(responseMessage);
-    return c.json({ data });
-  });
+      await messageResource.create(userMessage);
+      const responseMessage: DBCreateMessage = {
+        message: "dummy response",
+        chatId,
+        type: "system",
+      };
+      const data = await messageResource.create(responseMessage);
+      return c.json({ data });
+    }
+  );
   return chatApp;
 }

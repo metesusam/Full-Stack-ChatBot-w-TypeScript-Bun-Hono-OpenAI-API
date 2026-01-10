@@ -6,6 +6,7 @@ import type { ContextVariables } from "../constants";
 import { API_PREFIX } from "../constants";
 import { attachUserId, checkJWTAuth } from "../middlewares/auth";
 import { cors } from "hono/cors";
+import { rateLimitMiddleware } from "../middlewares/rateLimiting";
 
 import type {
   DBChat,
@@ -35,6 +36,8 @@ export function createMainApp(
   app.use("*", checkJWTAuth);
   app.use("*", attachUserId);
   app.use("*", cors(corsOptions));
+  app.use("*", attachUserId);
+  app.use("*", rateLimitMiddleware);
   app.route(AUTH_PREFIX, authApp);
   app.route(CHAT_PREFIX, chatApp);
   showRoutes(app);

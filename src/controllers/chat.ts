@@ -30,22 +30,36 @@ export function createChatApp(
 ) {
   const chatApp = new Hono<ContextVariables>();
 
+  chatApp.get(CHAT_DETAIL_ROUTE, zValidator("param", idSchema), async (c) => {
+    const { id } = c.req.valid("param");
+    const userId = c.get("userId");
+    const data = await chatResource.find({ id, ownerId: userId });
+    const res = { data };
+    c.get("cache").cache(res);
+    return c.json({ data });
+  });
+
   chatApp.post(CHAT_ROUTE, zValidator("json", chatSchema), async (c) => {
     const userId = c.get("userId");
     const { name } = c.req.valid("json");
     const data = await chatResource.create({ name, ownerId: userId });
+    c.get("cache").clearPath(c.req.path);
     return c.json({ data });
   });
 
   chatApp.get(CHAT_ROUTE, async (c) => {
     const userId = c.get("userId");
     const data = await chatResource.findAll({ ownerId: userId });
+    const res = { data };
+    c.get("cache").cache(res);
     return c.json({ data });
   });
 
   chatApp.get(CHAT_MESSAGE_ROUTE, async (c) => {
     const { id: chatId } = c.req.param();
     const data = await messageResource.findAll({ chatId });
+    const res = { data };
+    c.get("cache").cache(res);
     return c.json({ data });
   });
 
@@ -69,6 +83,8 @@ export function createChatApp(
         type: "system",
       };
       const data = await messageResource.create(responseMessage);
+      const res = { data };
+      c.get("cache").clearPath(c.req.path);
       return c.json({ data });
     }
   );

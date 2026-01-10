@@ -5,7 +5,8 @@
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "hono": "^4.11.3"
+    "hono": "^4.11.3",
+    "pino": "^10.1.0"
   },
   "devDependencies": {
     "@hono/eslint-config": "^2.0.4",

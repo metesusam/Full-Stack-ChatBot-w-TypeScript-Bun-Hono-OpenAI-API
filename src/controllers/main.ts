@@ -5,6 +5,8 @@ import { timing } from "hono/timing";
 import type { ContextVariables } from "../constants";
 import { API_PREFIX } from "../constants";
 import { attachUserId, checkJWTAuth } from "../middlewares/auth";
+import { cors } from "hono/cors";
+
 import type {
   DBChat,
   DBCreateChat,
@@ -17,6 +19,13 @@ import { SimpleInMemoryResource } from "../storage/in_memory";
 import { AUTH_PREFIX, createAuthApp } from "./auth";
 import { CHAT_PREFIX, createChatApp } from "./chat";
 
+const corsOptions = {
+  origin: [Bun.env.CORS_ORIGIN as string],
+  allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400,
+};
+
 export function createMainApp(
   authApp: Hono<ContextVariables>,
   chatApp: Hono<ContextVariables>
@@ -25,6 +34,7 @@ export function createMainApp(
   app.use("*", logger());
   app.use("*", checkJWTAuth);
   app.use("*", attachUserId);
+  app.use("*", cors(corsOptions));
   app.route(AUTH_PREFIX, authApp);
   app.route(CHAT_PREFIX, chatApp);
   showRoutes(app);

@@ -7,6 +7,12 @@ import { API_PREFIX } from "../constants";
 import { attachUserId, checkJWTAuth } from "../middlewares/auth";
 import { cors } from "hono/cors";
 import { rateLimitMiddleware } from "../middlewares/rateLimiting";
+import { Pool } from "pg";
+import {
+  ChatSQLResource,
+  MessageSQLResource,
+  UserSQLResource,
+} from "../storage/sql";
 
 import type {
   DBChat,
@@ -26,6 +32,16 @@ const corsOptions = {
   allowHeaders: ["Content-Type", "Authorization"],
   maxAge: 86400,
 };
+
+export function createSQLApp() {
+  const pool = new Pool({
+    connectionString: Bun.env.DATABASE_URL,
+  });
+  return createMainApp(
+    createAuthApp(new UserSQLResource(pool)),
+    createChatApp(new ChatSQLResource(pool), new MessageSQLResource(pool))
+  );
+}
 
 export function createMainApp(
   authApp: Hono<ContextVariables>,
